@@ -1,0 +1,56 @@
+body {
+  background: #DDDDDD;
+}
+
+.navbar {
+  background-color: #800000;
+  color: white;
+}
+
+.page-container {
+    margin-top: 75px;
+}
+
+.my-text {
+  text-align: center;
+  font-size: 2.0em;
+}
+
+#meal {
+  font-size: 1.5em;
+  text-align: center;
+  justify-content: center;
+}
+
+#item {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.btn-outline-light, .hi, .input-group {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+@media (max-width: 623px){
+  #title {
+    display: none;
+  }
+}
+
+.bmd-layout-content {
+    height: 100vh;
+}
+
+.bmd-layout-drawer > header {
+    background-color: #800000;
+    color: white;
+}
+
+.bmd-layout-drawer > ul {
+    background-color: #ddd;
+}
+
+.list-group-item :first-child {
+    margin-right: 0.75rem;
+}
