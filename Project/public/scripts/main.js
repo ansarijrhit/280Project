@@ -1,43 +1,148 @@
 var rhit = rhit || {};
 
 rhit.FB_COLLECTION_CHAUNCEYS = "Chauncey's";
+
+rhit.FB_KEY_AGGREGATE = "Aggregate";
+rhit.FB_KEY_CALORIES = "Calories";
 rhit.fbAuthManager = null;
+rhit.fbItemManager = null;
 
 rhit.selectedMenu = "Dining Hall";
 
-rhit.listPageController = class {
+/* <div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
+	   <a href = "/item.html" id = "meal">Dry Chicken</a>
+   </div> */
+
+function htmlToElement(html){
+  var template = document.createElement('template');
+  html = html.trim();
+  template.innerHTML = html;
+  return template.content.firstChild;
+}
+
+rhit.ListPageController = class {
 	constructor() {
 
     // this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_CHAUNCEYS);
 
     // console.log(this._ref);
+    const urlParams = new URLSearchParams(window.location.search);
+    rhit.selectedMenu = urlParams.get('menu');
+    console.log(rhit.selectedMenu);
     document.querySelector("#menuDiningHall").onclick = (event) => {
 			rhit.selectedMenu = "Dining Hall";
-      console.log("dining hall");
       window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
       this.updateView();
 		}
     document.querySelector("#menuChaunceys").onclick = (event) => {
 			rhit.selectedMenu = "Chaunceys";
-      console.log("chunkys");
       window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
       this.updateView();
 		}
     document.querySelector("#menuRoseGardens").onclick = (event) => {
 			rhit.selectedMenu = "Rose Gardens";
-      console.log("not dining hall");
       window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
       this.updateView();
 		}
+    this.updateView();
+		rhit.fbItemManager.beginListening(this.updateList.bind(this));
 	}
 
 	updateView() {
     document.querySelector("#locationTitle").text = rhit.selectedMenu;
     document.querySelector("#location").innerHTML = rhit.selectedMenu;
+  }
+  
+  _createItem(item) {
+    console.log(item);
+		return htmlToElement(`<div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
+      <a href = "/item.html?${item.name}" id = "meal">${item.name}</a></div>`);
+	}
+
+	updateList() {
+		console.log("update List!");
+
+		const newList = htmlToElement('<div class = "row" id="meals"></div>');
+
+		for(let i = 0; i < rhit.fbItemManager.length; i++){
+			const item = rhit.fbItemManager.getItemAtIndex(i);
+			const newCard = this._createItem(item);
+
+			newCard.onclick = (event) => {
+				window.location.href = `/item.html?id=${item.id}`;
+			};
+
+			newList.appendChild(newCard);	
+		}
+		//Remove old container
+		const oldList = document.querySelector("#meals");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+		//Put in the new container
+		oldList.parentElement.appendChild(newList);
 	}
 }
 
+rhit.fbItemManager = class {
+	constructor(uid) {
+		this._uid = uid;
+		this._documentSnapshots = [];
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_CHAUNCEYS);
+		this._unsubscribe = null;
+	}
+	// add(itemName, aggregate, calories) {
+	// 	this._ref.add({
+	// 		[rhit.FB_KEY_PHOTO]: itemName, //Not done
+	// 		[rhit.FB_KEY_CAPTION]: aggregate, //Fix
+	// 		[rhit.FB_KEY_AUTHOR]: rhit.fbAuthManager.uid,
+	// 		[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now()
+	// 	})
+	// 	.then(function (docRef) {
+	// 		console.log("boi");
+	// 	})
+	// 	.catch(function (error) {
+	// 		console.log("errrrrror");
+	// 	});
+	// }
+	beginListening(changeListener){
+    let query = this._ref.orderBy(rhit.FB_KEY_CALORIES, 'desc').limit(50);
+    
 
+		if(this._uid){
+			query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
+		}
+
+		this._unsubscribe = query
+		.onSnapshot((querySnapshot) => {
+			this._documentSnapshots = querySnapshot.docs;
+			changeListener();
+		});
+	}
+	stopListening(){
+		this._unsubscribe();
+	}
+	
+	get length(){
+		return this._documentSnapshots.length;
+	}
+	getItemAtIndex(index){
+		const docSnapshot = this._documentSnapshots[index];
+		const item = new rhit.Item(
+			docSnapshot.id,
+			docSnapshot.get(rhit.FB_KEY_AGGREGATE),
+			docSnapshot.get(rhit.FB_KEY_CALORIES)
+		);
+		return item;
+	}
+}
+
+rhit.Item = class {
+	constructor(name, aggregate, calories){
+		this.name = name;
+		this.aggregate = aggregate;
+		this.calories = calories;
+	}
+}
     
 rhit.LoginPageController = class {
 	constructor() {
@@ -151,7 +256,8 @@ rhit.initializePage = function() {
 	if(document.querySelector("#listPage")){
 		console.log("You are on the list page.");
 		const uid = urlParams.get("uid");
-		new rhit.listPageController();
+		rhit.fbItemManager = new rhit.fbItemManager(uid);
+		new rhit.ListPageController();
 	}
 
 	else if(document.querySelector("#detailPage")){
