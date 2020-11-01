@@ -32,7 +32,7 @@ body {
   margin-bottom: 0px;
 }
 
-@media (max-width: 623px){
+@media (max-width: 655px){
   #title {
     display: none;
   }
@@ -53,4 +53,22 @@ body {
 
 .list-group-item :first-child {
     margin-right: 0.75rem;
+}
+
+#roseFireButton {
+  display: block;
+  margin: 20px auto;
+  color: white;
+  background: #800000;
+  font-size: 1.1em;
+  padding: 10px 30px;
+  border-radius: 5px;
+}
+
+.dropdown-menu-right {
+  left: -128px;
+}
+
+#title-div {
+  display: flex;
 }
