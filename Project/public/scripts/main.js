@@ -7,6 +7,8 @@ rhit.FB_KEY_CALORIES = "Calories";
 rhit.fbAuthManager = null;
 rhit.fbItemManager = null;
 
+rhit.foodItem = null;
+
 rhit.selectedMenu = "Dining Hall";
 
 /* <div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
@@ -54,9 +56,8 @@ rhit.ListPageController = class {
   }
   
   _createItem(item) {
-    console.log(item);
 		return htmlToElement(`<div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
-      <a href = "/item.html?${item.name}" id = "meal">${item.name}</a></div>`);
+      <a href = "/item.html?name=${item.name}" id = "meal">${item.name}</a></div>`);
 	}
 
 	updateList() {
@@ -114,7 +115,7 @@ rhit.fbItemManager = class {
 
 		this._unsubscribe = query
 		.onSnapshot((querySnapshot) => {
-			this._documentSnapshots = querySnapshot.docs;
+      this._documentSnapshots = querySnapshot.docs;
 			changeListener();
 		});
 	}
@@ -133,7 +134,23 @@ rhit.fbItemManager = class {
 			docSnapshot.get(rhit.FB_KEY_CALORIES)
 		);
 		return item;
-	}
+  }
+  getItemByName(name){
+    const docSnapshot = null;
+    console.log(this._documentSnapshots);
+    for(let i = 0; i < this._documentSnapshots.length; i++){
+      // console.log(this._documentSnapshots[i].name);
+      if(name == this._documentSnapshots[i].name){
+        docSnapshot = this._documentSnapshots.get[i];
+      }
+    }
+		const item = new rhit.Item(
+			// docSnapshot.id,
+			docSnapshot.get(rhit.FB_KEY_AGGREGATE),
+			docSnapshot.get(rhit.FB_KEY_CALORIES)
+		);
+		return item;
+  }
 }
 
 rhit.Item = class {
@@ -205,6 +222,17 @@ rhit.FbAuthManager = class {
 	}
 }
 
+rhit.DetailPageController = class {
+  constructor() {
+    const urlParams = new URLSearchParams(window.location.search);
+    rhit.foodName = urlParams.get('name');
+    document.querySelector("#foodNameHereTitle").text = rhit.foodName;
+    document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
+    document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + "(" + rhit.fbItemManager.getItemByName(rhit.foodName).aggregate + ")";
+  }
+
+}
+
 rhit.startFirebaseUI = function() {
 	// FirebaseUI config.
 	var uiConfig = {
@@ -264,6 +292,8 @@ rhit.initializePage = function() {
 
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString);
+		const uid = urlParams.get("uid");
+    rhit.fbItemManager = new rhit.fbItemManager(uid);
 		new rhit.DetailPageController();
 	}
 
