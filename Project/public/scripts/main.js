@@ -1,13 +1,14 @@
 var rhit = rhit || {};
 
 rhit.FB_COLLECTION_CHAUNCEYS = "Chauncey's";
+rhit.FB_COLLECTION_ROSEGARDENS = "Rose Gardens";
 
 rhit.FB_KEY_AGGREGATE = "Aggregate";
 rhit.FB_KEY_CALORIES = "Calories";
 rhit.fbAuthManager = null;
 rhit.fbItemManager = null;
 
-rhit.foodItem = null;
+rhit.foodItems = [];
 
 rhit.selectedMenu = "Dining Hall";
 
@@ -25,28 +26,37 @@ function htmlToElement(html){
 rhit.ListPageController = class {
 	constructor() {
 
-    // this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_CHAUNCEYS);
+		// this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_CHAUNCEYS);
 
-    // console.log(this._ref);
-    const urlParams = new URLSearchParams(window.location.search);
-    rhit.selectedMenu = urlParams.get('menu');
-    console.log(rhit.selectedMenu);
-    document.querySelector("#menuDiningHall").onclick = (event) => {
+		// console.log(this._ref);
+		const urlParams = new URLSearchParams(window.location.search);
+		rhit.selectedMenu = urlParams.get('menu');
+		console.log(rhit.selectedMenu);
+		document.querySelector("#menuDiningHall").onclick = (event) => {
 			rhit.selectedMenu = "Dining Hall";
-      window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
-      this.updateView();
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
+			this.updateView();
 		}
-    document.querySelector("#menuChaunceys").onclick = (event) => {
+		document.querySelector("#menuChaunceys").onclick = (event) => {
 			rhit.selectedMenu = "Chaunceys";
-      window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
-      this.updateView();
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
+			this.updateView();
 		}
-    document.querySelector("#menuRoseGardens").onclick = (event) => {
+		document.querySelector("#menuRoseGardens").onclick = (event) => {
 			rhit.selectedMenu = "Rose Gardens";
-      window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
-      this.updateView();
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
+			this.updateView();
 		}
-    this.updateView();
+
+		document.querySelector("#menuSignOut").onclick = (event) => {
+			rhit.fbAuthManager.signOut();
+		}
+
+		// document.querySelector("#foodItem").onclick = (event) => {
+		// 	rhit.foodItem = 
+		// }
+
+		this.updateView();
 		rhit.fbItemManager.beginListening(this.updateList.bind(this));
 	}
 
@@ -106,8 +116,7 @@ rhit.fbItemManager = class {
 	// 	});
 	// }
 	beginListening(changeListener){
-    let query = this._ref.orderBy(rhit.FB_KEY_CALORIES, 'desc').limit(50);
-    
+    	let query = this._ref.orderBy(rhit.FB_KEY_CALORIES, 'desc').limit(50);
 
 		if(this._uid){
 			query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
@@ -115,7 +124,8 @@ rhit.fbItemManager = class {
 
 		this._unsubscribe = query
 		.onSnapshot((querySnapshot) => {
-      this._documentSnapshots = querySnapshot.docs;
+			this._documentSnapshots = querySnapshot.docs;
+			console.log(this._documentSnapshots);
 			changeListener();
 		});
 	}
@@ -136,14 +146,14 @@ rhit.fbItemManager = class {
 		return item;
   }
   getItemByName(name){
-    const docSnapshot = null;
-    console.log(this._documentSnapshots);
-    for(let i = 0; i < this._documentSnapshots.length; i++){
-      // console.log(this._documentSnapshots[i].name);
-      if(name == this._documentSnapshots[i].name){
-        docSnapshot = this._documentSnapshots.get[i];
-      }
-    }
+		const docSnapshot = null;
+		console.log(this._documentSnapshots);
+		for(let i = 0; i < this._documentSnapshots.length; i++){
+			console.log(this._documentSnapshots[i].name);
+			if(name == this._documentSnapshots[i].name){
+				docSnapshot = this._documentSnapshots.get[i];
+			}
+		}
 		const item = new rhit.Item(
 			// docSnapshot.id,
 			docSnapshot.get(rhit.FB_KEY_AGGREGATE),
@@ -182,7 +192,7 @@ rhit.FbAuthManager = class {
 			console.log(this._user);
 			this._user = user;
 			changeListener();
-		  });
+		});
 	}
 	signIn() {
 		// Please note this needs to be the result of a user interaction
@@ -224,11 +234,18 @@ rhit.FbAuthManager = class {
 
 rhit.DetailPageController = class {
   constructor() {
+	
     const urlParams = new URLSearchParams(window.location.search);
-    rhit.foodName = urlParams.get('name');
-    document.querySelector("#foodNameHereTitle").text = rhit.foodName;
-    document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
-    document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + "(" + rhit.fbItemManager.getItemByName(rhit.foodName).aggregate + ")";
+	rhit.foodName = urlParams.get('name');
+	// console.log(rhit.fbItemManager._documentSnapshots);
+	// console.log(rhit.fbItemManager.getItemByName(rhit.foodName));
+    document.querySelector("#foodNameHereTitle").text = rhit.foodName;//rhit.foodItem.name;
+    document.querySelector("#foodNameHere").innerHTML = rhit.foodName;//rhit.foodItem.name;
+	document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (4.0)";// + "(" + rhit.fbItemManager.getItemByName(rhit.foodName).aggregate + ")";//rhit.foodItem.name + "(" + rhit.foodItem.aggregate + ")";
+	
+	document.querySelector("#menuSignOut").onclick = (event) => {
+		rhit.fbAuthManager.signOut();
+	}
   }
 
 }
@@ -266,7 +283,7 @@ rhit.main = function () {
 
 rhit.checkForRedirects = function() {
 	if(document.querySelector("#loginPage") && rhit.fbAuthManager.isSignedIn){
-		window.location.href = "/list.html";
+		window.location.href = "/list.html?menu=Dining%20Hall";
 	}
 	if(!document.querySelector("#loginPage") && !rhit.fbAuthManager.isSignedIn){
 		window.location.href = "/";
@@ -293,9 +310,9 @@ rhit.initializePage = function() {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString);
 		const uid = urlParams.get("uid");
-    rhit.fbItemManager = new rhit.fbItemManager(uid);
-		new rhit.DetailPageController();
-	}
+		rhit.fbItemManager = new rhit.fbItemManager(uid);
+			new rhit.DetailPageController();
+		}
 
 	else if(document.querySelector("#loginPage")) {
 		console.log("You are on the login page.");
