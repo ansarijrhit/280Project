@@ -1,8 +1,5 @@
 var rhit = rhit || {};
 
-rhit.FB_COLLECTION_CHAUNCEYS = "Chauncey's";
-rhit.FB_COLLECTION_ROSEGARDENS = "Rose Gardens";
-
 rhit.FB_KEY_AGGREGATE = "Aggregate";
 rhit.FB_KEY_CALORIES = "Calories";
 rhit.fbAuthManager = null;
@@ -33,7 +30,7 @@ rhit.ListPageController = class {
 		const urlParams = new URLSearchParams(window.location.search);
 		rhit.selectedMenu = urlParams.get('menu');
 		console.log(rhit.selectedMenu);
-		rhit.fbItemManager = new rhit.fbItemManager();
+		rhit.fbItemManager = new rhit.FbItemManager();
 		document.querySelector("#menuDiningHall").onclick = (event) => {
 			rhit.selectedMenu = "Dining Hall";
 			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
@@ -96,12 +93,12 @@ rhit.ListPageController = class {
 	}
 }
 
-rhit.fbItemManager = class {
+rhit.FbItemManager = class {
 	constructor() {
 		// this._uid = uid;
 		this._documentSnapshots = [];
 		this._ref = firebase.firestore().collection(rhit.selectedMenu);
-		console.log("Ref: " + this._ref + " " + rhit.selectedMenu);//FB_COLLECTION_CHAUNCEYS);
+		console.log("Ref: " + this._ref + " " + rhit.selectedMenu);
 		this._unsubscribe = null;
 	}
 	// add(itemName, aggregate, calories) {
@@ -228,14 +225,12 @@ rhit.DetailPageController = class {
     const urlParams = new URLSearchParams(window.location.search);
 	rhit.foodName = urlParams.get('name');
 	rhit.selectedMenu = urlParams.get('menu');
-	rhit.fbItemManager = new rhit.fbItemManager();
+	rhit.fbItemManager = new rhit.FbItemManager();
 	this.foodItem = rhit.fbItemManager.getItemByName(rhit.foodName);
 	// console.log(rhit.fbItemManager._ref.doc(rhit.foodName).data().Calories);
 	this.foodItem.get().then(function(doc) {
 		if (doc.exists) {
-			console.log("Document data:", doc.data().Calories);
 			rhit.calories = doc.data().Calories;
-			console.log(rhit.calories);
 			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit.calories + ")";
 		} else {
 			// doc.data() will be undefined in this case
@@ -304,7 +299,6 @@ rhit.initializePage = function() {
   // }
   const urlParams = new URLSearchParams(window.location.search);
 	if(document.querySelector("#listPage")){
-		console.log("You are on the list page.");
 		const uid = urlParams.get("uid");
 		rhit.selectedMenu = "Dining Hall";
 		new rhit.ListPageController();
@@ -312,9 +306,9 @@ rhit.initializePage = function() {
 
 	else if(document.querySelector("#detailPage")){
 
-		const queryString = window.location.search
-		const urlParams = new URLSearchParams(queryString);
-		const uid = urlParams.get("uid");
+			const queryString = window.location.search
+			const urlParams = new URLSearchParams(queryString);
+			const uid = urlParams.get("uid");
 			new rhit.DetailPageController();
 		}
 
