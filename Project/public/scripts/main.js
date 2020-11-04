@@ -8,9 +8,10 @@ rhit.FB_KEY_CALORIES = "Calories";
 rhit.fbAuthManager = null;
 rhit.fbItemManager = null;
 
-rhit.foodItems = [];
+rhit.foodItem = null;
+rhit.calories = 0;
 
-rhit.selectedMenu = "Dining Hall";
+rhit.selectedMenu = "";
 
 /* <div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
 	   <a href = "/item.html" id = "meal">Dry Chicken</a>
@@ -32,13 +33,14 @@ rhit.ListPageController = class {
 		const urlParams = new URLSearchParams(window.location.search);
 		rhit.selectedMenu = urlParams.get('menu');
 		console.log(rhit.selectedMenu);
+		rhit.fbItemManager = new rhit.fbItemManager();
 		document.querySelector("#menuDiningHall").onclick = (event) => {
 			rhit.selectedMenu = "Dining Hall";
 			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
 			this.updateView();
 		}
 		document.querySelector("#menuChaunceys").onclick = (event) => {
-			rhit.selectedMenu = "Chaunceys";
+			rhit.selectedMenu = "Chauncey's";
 			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
 			this.updateView();
 		}
@@ -67,7 +69,7 @@ rhit.ListPageController = class {
   
   _createItem(item) {
 		return htmlToElement(`<div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
-      <a href = "/item.html?name=${item.name}" id = "meal">${item.name}</a></div>`);
+      <a href = "/item.html?name=${item.name}&menu=${rhit.selectedMenu}" id = "meal">${item.name}</a></div>`);
 	}
 
 	updateList() {
@@ -95,10 +97,11 @@ rhit.ListPageController = class {
 }
 
 rhit.fbItemManager = class {
-	constructor(uid) {
-		this._uid = uid;
+	constructor() {
+		// this._uid = uid;
 		this._documentSnapshots = [];
-		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_CHAUNCEYS);
+		this._ref = firebase.firestore().collection(rhit.selectedMenu);
+		console.log("Ref: " + this._ref + " " + rhit.selectedMenu);//FB_COLLECTION_CHAUNCEYS);
 		this._unsubscribe = null;
 	}
 	// add(itemName, aggregate, calories) {
@@ -116,11 +119,11 @@ rhit.fbItemManager = class {
 	// 	});
 	// }
 	beginListening(changeListener){
-    	let query = this._ref.orderBy(rhit.FB_KEY_CALORIES, 'desc').limit(50);
+    	let query = this._ref.orderBy(rhit.FB_KEY_CALORIES, 'desc');
 
-		if(this._uid){
-			query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
-		}
+		// if(this._uid){
+		// 	query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
+		// }
 
 		this._unsubscribe = query
 		.onSnapshot((querySnapshot) => {
@@ -146,20 +149,7 @@ rhit.fbItemManager = class {
 		return item;
   }
   getItemByName(name){
-		const docSnapshot = null;
-		console.log(this._documentSnapshots);
-		for(let i = 0; i < this._documentSnapshots.length; i++){
-			console.log(this._documentSnapshots[i].name);
-			if(name == this._documentSnapshots[i].name){
-				docSnapshot = this._documentSnapshots.get[i];
-			}
-		}
-		const item = new rhit.Item(
-			// docSnapshot.id,
-			docSnapshot.get(rhit.FB_KEY_AGGREGATE),
-			docSnapshot.get(rhit.FB_KEY_CALORIES)
-		);
-		return item;
+		return this._ref.doc(name);
   }
 }
 
@@ -237,11 +227,26 @@ rhit.DetailPageController = class {
 	
     const urlParams = new URLSearchParams(window.location.search);
 	rhit.foodName = urlParams.get('name');
-	// console.log(rhit.fbItemManager._documentSnapshots);
-	// console.log(rhit.fbItemManager.getItemByName(rhit.foodName));
-    document.querySelector("#foodNameHereTitle").text = rhit.foodName;//rhit.foodItem.name;
-    document.querySelector("#foodNameHere").innerHTML = rhit.foodName;//rhit.foodItem.name;
-	document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (4.0)";// + "(" + rhit.fbItemManager.getItemByName(rhit.foodName).aggregate + ")";//rhit.foodItem.name + "(" + rhit.foodItem.aggregate + ")";
+	rhit.selectedMenu = urlParams.get('menu');
+	rhit.fbItemManager = new rhit.fbItemManager();
+	this.foodItem = rhit.fbItemManager.getItemByName(rhit.foodName);
+	// console.log(rhit.fbItemManager._ref.doc(rhit.foodName).data().Calories);
+	this.foodItem.get().then(function(doc) {
+		if (doc.exists) {
+			console.log("Document data:", doc.data().Calories);
+			rhit.calories = doc.data().Calories;
+			console.log(rhit.calories);
+			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit.calories + ")";
+		} else {
+			// doc.data() will be undefined in this case
+			console.log("No such document!");
+		}
+	}).catch(function(error) {
+		console.log("Error getting document:", error);
+	});
+	// console.log(this.foodItem.data());
+    document.querySelector("#foodNameHereTitle").text = rhit.foodName;
+    document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
 	
 	document.querySelector("#menuSignOut").onclick = (event) => {
 		rhit.fbAuthManager.signOut();
@@ -301,7 +306,7 @@ rhit.initializePage = function() {
 	if(document.querySelector("#listPage")){
 		console.log("You are on the list page.");
 		const uid = urlParams.get("uid");
-		rhit.fbItemManager = new rhit.fbItemManager(uid);
+		rhit.selectedMenu = "Dining Hall";
 		new rhit.ListPageController();
 	}
 
@@ -310,7 +315,6 @@ rhit.initializePage = function() {
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString);
 		const uid = urlParams.get("uid");
-		rhit.fbItemManager = new rhit.fbItemManager(uid);
 			new rhit.DetailPageController();
 		}
 
