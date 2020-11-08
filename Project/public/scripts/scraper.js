@@ -1,14 +1,22 @@
-let cheerio = require('cheerio');
-let $ = cheerio.load('https://rose-hulman.cafebonappetit.com/cafe/cafe/');
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-// //*[contains(concat( " ", @class, " " ), concat( " ", "station-title-inline-block", " " ))]//*[contains(concat( " ", @class, " " ), concat( " ", "site-panel__daypart-item-title", " " ))]
+const getMealItems = async () => {
+	try {
+		const { data } = await axios.get(
+			'https://rose-hulman.cafebonappetit.com/cafe/cafe/'
+		);
+		const $ = cheerio.load(data);
+		const mealItems = [];
 
+		$('button.site-panel__daypart-item-title').each((_idx, el) => {
+			const mealItem = $(el).text()
+		    mealItems.push(mealItem)
+		});
 
-let mealItemList = [];
-
-$('.list.items .item').each(function(index, element) {
-    let header = $(element).find('.site-panel__daypart-item-title');
-    mealItemList[index] = $(header).text();
-});
-
-console.log(mealItemList);
+		return mealItems;
+	} catch (error) {
+		throw error;
+	}
+};
+getMealItems().then((mealItems) => console.log(mealItems));
