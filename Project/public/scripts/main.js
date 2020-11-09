@@ -243,7 +243,8 @@ rhit.DetailPageController = class {
 	// console.log(this.foodItem.data());
     document.querySelector("#foodNameHereTitle").text = rhit.foodName;
     document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
-	
+	document.querySelector("#foodNameHere").href = `/list.html?menu=${rhit.selectedMenu}&uid=${this._uid}`;
+
 	document.querySelector("#menuSignOut").onclick = (event) => {
 		rhit.fbAuthManager.signOut();
 	}

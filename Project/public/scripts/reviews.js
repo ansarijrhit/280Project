@@ -94,6 +94,21 @@ rhit2.FbReviewManager = class {
 			console.error("Error removing document: ", error);
 		});
 	}
+
+	update(id, rating, review) {
+		
+		this._ref = firebase.firestore().collection("Reviews").doc(id).update({
+			"Score": rating,
+			"Review": review,
+			"lastTouched": firebase.firestore.Timestamp.now()
+		})
+		.then(function () {
+			console.log("hi");
+		})
+		.catch(function (error) {
+			console.log("hi2");
+		});
+	}
 }
 
 rhit2.Review = class {
@@ -130,6 +145,12 @@ rhit2.DetailPageController = class {
 
 		document.querySelector("#submitDeleteReview").onclick = (event) => {
 			rhit2.fbReviewManager.delete(rhit2.selectedReview.id);
+		}
+
+		document.querySelector("#submitEditReview").onclick = (event) => {
+			console.log("Hewwo?");
+			var score = parseInt($('#editRadios input:radio:checked').val());
+			rhit2.fbReviewManager.update(rhit2.selectedReview.id, score, document.querySelector("#editReviewExplain").value);
 		}
     }
 
@@ -175,11 +196,15 @@ rhit2.DetailPageController = class {
 		if(review.user == this.uid){
 			rhit2.selectedReview = review;
 			document.querySelector("#fab").disabled = true;
+
+			document.querySelector("#editReviewExplain").innerHTML = review.review;
+
+
 			return htmlToElement(`<div id = "review">
-				<h2 id = "title">Review by ${review.user} (${review.score}) <button id = "reviewOption editReview" type = "button" class = "edit btn bmd-btn-fab" data-toggle="modal" data-target="#editReviewDialog value = ${review.id}">
+				<h2 id = "title">Review by ${review.user} (${review.score}) <button id = "reviewOption editReview" type = "button" class = "edit btn bmd-btn-fab" data-toggle="modal" data-target="#editReviewDialog">
 				<i class = "edit material-icons">edit</i> 
 				</button> 
-				<button id = "reviewOption deleteReview" type = "button" class = "delete btn bmd-btn-fab" data-toggle="modal" data-target="#deleteReviewDialog" value = ${review.id}">
+				<button id = "reviewOption deleteReview" type = "button" class = "delete btn bmd-btn-fab" data-toggle="modal" data-target="#deleteReviewDialog">
 				<i class = "material-icons">delete</i>
 				</button></h2>
 				<p id = "meat">${review.review}</p>
@@ -191,6 +216,8 @@ rhit2.DetailPageController = class {
         <p id = "meat">${review.review}</p>
 		</div>`);
 	}
+
+	
 }
 
 rhit2.MyReviewsPageController = class {

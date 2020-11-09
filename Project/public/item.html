@@ -73,7 +73,7 @@
           </div>
 
           <div class="form-group bmd-form-group">
-            <label for="exampleFormControlTextarea1">Explain your rating...</label>
+            <label for="reviewExplain">Explain your rating...</label>
             <textarea class="form-control rounded-0" id="reviewExplain" rows="10"></textarea>
           </div>
           
@@ -106,6 +106,51 @@
     </div>
   </div>
 
+  <div class="modal fade" id="editReviewDialog" tabindex="-1" role="dialog" aria-labelledby="Edit Review Dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Your Review</h5>
+        </div>
+        <div class="modal-body">
+          
+          <div id = "editRadios">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="1">
+              <label class="form-check-label" for="inlineRadio1">1</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="2">
+              <label class="form-check-label" for="inlineRadio2">2</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="3">
+              <label class="form-check-label" for="inlineRadio3">3</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="4">
+              <label class="form-check-label" for="inlineRadio4">4</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="5" checked>
+              <label class="form-check-label" for="inlineRadio5">5</label>
+            </div>
+          </div>
+
+          <div class="form-group bmd-form-group">
+            <label for="editReviewExplain">Explain your rating...</label>
+            <textarea class="form-control rounded-0" id="editReviewExplain" rows="10"></textarea>
+          </div>
+          
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">CANCEL</button>
+          <button id = "submitEditReview" type="button" class="btn btn-primary" data-dismiss = "modal">EDIT</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
