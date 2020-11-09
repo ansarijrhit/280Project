@@ -6,6 +6,7 @@ rhit2.aggregate = 0;
 rhit2.scores = [];
 
 rhit2.selectedReview = null;
+rhit2.createReview = true;
 
 function htmlToElement(html){
     var template = document.createElement('template');
@@ -19,11 +20,11 @@ rhit2.FbReviewManager = class {
         // this._uid = "hi";
 		this._documentSnapshots = [];
 		this._ref = firebase.firestore().collection("Reviews");
-		console.log("Ref2: " + this._ref);
+		// console.log("Ref2: " + this._ref);
         this._unsubscribe = null;
 	}
 	add(item, restaurant, score, review, user) {
-		console.log(item + " " + restaurant + " " + score + " " + review + " " + firebase.firestore.Timestamp.now() + " " + this._uid);
+		// console.log(item + " " + restaurant + " " + score + " " + review + " " + firebase.firestore.Timestamp.now() + " " + this._uid);
 		this._ref.add({
 			"Item": item,
 			"Restaurant": restaurant,
@@ -33,7 +34,7 @@ rhit2.FbReviewManager = class {
 			"user": user
 		})
 		.then(function (docRef) {
-			console.log("boi");
+			console.log("Successful add");
 		})
 		.catch(function (error) {
 			console.log("errrrrror");
@@ -45,7 +46,7 @@ rhit2.FbReviewManager = class {
 		this._unsubscribe = query
 		.onSnapshot((querySnapshot) => {
 			this._documentSnapshots = querySnapshot.docs;
-			console.log(this._documentSnapshots);
+			// console.log(this._documentSnapshots);
 			changeListener();
 		});
 	}
@@ -71,7 +72,16 @@ rhit2.FbReviewManager = class {
     }
     getItemByName(name){
             return this._ref.doc(name);
-    }
+	}
+	delete(reviewId){ 
+		this._ref.doc(reviewId).delete().then(function() {
+			rhit2.createReview = true;
+			console.log("Document successfully deleted!");
+			document.querySelector("#fab").disabled = false;
+		}).catch(function(error) {
+			console.error("Error removing document: ", error);
+		});
+	}
 }
 
 rhit2.Review = class {
@@ -95,18 +105,20 @@ rhit2.DetailPageController = class {
 
 		const urlParams = new URLSearchParams(window.location.search);
 		this.uid = urlParams.get('uid');
-		console.log(this.uid);
+		// console.log(this.uid);
 
 		document.querySelector("#submitReview").onclick = (event) => {
-			console.log(rhit.foodName + " " + rhit.selectedMenu);
+			// console.log(rhit.foodName + " " + rhit.selectedMenu);
 			var score = parseInt($('#radios input:radio:checked').val());
-			console.log(this.uid);
+			// console.log(this.uid);
 			rhit2.fbReviewManager.add(rhit.foodName, rhit.selectedMenu, score, document.querySelector("#reviewExplain").value, this.uid);
 			console.log("Review Submit");
 			document.querySelector("#reviewExplain").value = "";
 		}
 
-		
+		document.querySelector("#submitDeleteReview").onclick = (event) => {
+			rhit2.fbReviewManager.delete(rhit2.selectedReview.id);
+		}
     }
 
     updateList() {
@@ -137,7 +149,6 @@ rhit2.DetailPageController = class {
 		oldList.hidden = true;
 		//Put in the new container
 		oldList.parentElement.appendChild(newList);
-		console.log(document.querySelector(".edit"));
 	}
 
     _createReview(review){
@@ -150,6 +161,8 @@ rhit2.DetailPageController = class {
 		document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ") (" + rhit.calories + " calories)";
 
 		if(review.user == this.uid){
+			rhit2.selectedReview = review;
+			document.querySelector("#fab").disabled = true;
 			return htmlToElement(`<div id = "review">
 				<h2 id = "title">Review by ${review.user} (${review.score}) <button id = "reviewOption editReview" type = "button" class = "edit btn bmd-btn-fab" data-toggle="modal" data-target="#editReviewDialog value = ${review.id}">
 				<i class = "edit material-icons">edit</i> 
@@ -169,7 +182,6 @@ rhit2.DetailPageController = class {
 }
 
 rhit2.main = function() {
-
     new rhit2.DetailPageController();
 }
 

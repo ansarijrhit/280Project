@@ -218,7 +218,6 @@ rhit.FbAuthManager = class {
 
 rhit.DetailPageController = class {
   constructor() {
-	console.log(document.querySelector("#title2 > button"));
     const urlParams = new URLSearchParams(window.location.search);
 	rhit.foodName = urlParams.get('name');
 	rhit.selectedMenu = urlParams.get('menu');
