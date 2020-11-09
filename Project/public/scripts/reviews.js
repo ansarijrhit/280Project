@@ -78,6 +78,18 @@ rhit2.FbReviewManager = class {
 			rhit2.createReview = true;
 			console.log("Document successfully deleted!");
 			document.querySelector("#fab").disabled = false;
+			
+			rhit2.aggregate = 0;
+			if(!rhit2.scores.length == 0){
+				for(let i = 0; i < rhit2.scores.length; i++){
+					rhit2.aggregate += rhit2.scores[i];
+				}
+				rhit2.aggregate /= (rhit2.scores.length);
+
+			
+			}
+
+			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ") (" + rhit.calories + " calories)";
 		}).catch(function(error) {
 			console.error("Error removing document: ", error);
 		});
@@ -178,11 +190,64 @@ rhit2.DetailPageController = class {
         <h2 id = "title">Review by ${review.user} (${review.score})</h2>
         <p id = "meat">${review.review}</p>
 		</div>`);
+	}
+}
+
+rhit2.MyReviewsPageController = class {
+	constructor() {
+        rhit2.fbReviewManager = new rhit2.FbReviewManager();
+
+        this.updateList();
+		rhit2.fbReviewManager.beginListening(this.updateList.bind(this));
+
+		const urlParams = new URLSearchParams(window.location.search);
+		this.uid = urlParams.get('user');
+
+		document.querySelector("#title").href = `/list.html?menu=Dining%20Hall&uid=${this.uid}`;
     }
+
+    updateList() {
+		console.log("update List!");
+
+		const newList = htmlToElement('<div id= "reviews"></div>');
+		rhit2.scores = [];
+		rhit2.aggregate = 0;
+		for(let i = 0; i < rhit2.fbReviewManager.length; i++){
+			const review = rhit2.fbReviewManager.getItemAtIndex(i);
+			if(review.user != this.uid){
+				continue;
+			}
+			const newCard = this._createReview(review);
+
+			// newCard.onclick = (event) => {
+			// 	window.location.href = `/item.html?id=${item.id}`;
+			// };
+
+			newList.appendChild(newCard);	
+		}
+		//Remove old container
+		const oldList = document.querySelector("#reviews");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+		//Put in the new container
+		oldList.parentElement.appendChild(newList);
+	}
+
+	_createReview(review) {
+		return htmlToElement(`<div id = "review">
+        <h2 id = "title"><a href = "/item.html?name=${review.item}&menu=${review.restaurant}&uid=${this.uid}">Review by ${review.user} (${review.score})</a></h2>
+        <p id = "meat">${review.review}</p>
+		</div>`);
+	}
 }
 
 rhit2.main = function() {
-    new rhit2.DetailPageController();
+	if(document.querySelector("#detailPage")){
+		new rhit2.DetailPageController();
+	}
+	if(document.querySelector("#myReviewsPage")){
+		new rhit2.MyReviewsPageController();
+	}
 }
 
 rhit2.main();

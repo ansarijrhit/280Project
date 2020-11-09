@@ -54,6 +54,10 @@ rhit.ListPageController = class {
 
 		this.updateView();
 		rhit.fbItemManager.beginListening(this.updateList.bind(this));
+
+		document.querySelector("#menuMyReviews").onclick = (event) => {
+			window.location.href = `/myReviews.html?user=${this._uid}`
+		}
 	}
 
 	updateView() {
@@ -217,7 +221,8 @@ rhit.FbAuthManager = class {
 }
 
 rhit.DetailPageController = class {
-  constructor() {
+  constructor(uid) {
+	this._uid = uid;
     const urlParams = new URLSearchParams(window.location.search);
 	rhit.foodName = urlParams.get('name');
 	rhit.selectedMenu = urlParams.get('menu');
@@ -242,6 +247,10 @@ rhit.DetailPageController = class {
 	document.querySelector("#menuSignOut").onclick = (event) => {
 		rhit.fbAuthManager.signOut();
 	}
+
+	document.querySelector("#menuMyReviews").onclick = (event) => {
+		window.location.href = `/myReviews.html?user=${this._uid}`
+	}
   }
 
 }
@@ -251,7 +260,7 @@ rhit.startFirebaseUI = function() {
 	var uiConfig = {
         signInSuccessUrl: '/',
         signInOptions: [
-          firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
+        //   firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
         ],
       };
 
@@ -305,7 +314,7 @@ rhit.initializePage = function() {
 			const queryString = window.location.search
 			const urlParams = new URLSearchParams(queryString);
 			const uid = urlParams.get("uid");
-			new rhit.DetailPageController();
+			new rhit.DetailPageController(uid);
 		}
 
 	else if(document.querySelector("#loginPage")) {
