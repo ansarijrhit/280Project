@@ -1,22 +1,29 @@
+const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-const getMealItems = async () => {
-	try {
-		const { data } = await axios.get(
-			'https://rose-hulman.cafebonappetit.com/cafe/cafe/'
-		);
-		const $ = cheerio.load(data);
-		const mealItems = [];
+const app = express();
 
-		$('button.site-panel__daypart-item-title').each((_idx, el) => {
-			const mealItem = $(el).text()
-		    mealItems.push(mealItem)
-		});
+app.get("/mealitems",(request, response) => {
+	const getMealItems = async () => {
+		try {
+			const { data } = await axios.get(
+				'https://rose-hulman.cafebonappetit.com/cafe/cafe/'
+			);
+			const $ = cheerio.load(data);
+			const mealItems = [];
 
-		return mealItems;
-	} catch (error) {
-		throw error;
+			$('button.site-panel__daypart-item-title').each((_idx, el) => {
+				const mealItem = $(el).text().replace(/[\n\t]+/gm, "");
+				mealItems.push(mealItem);
+			});
+
+			return mealItems;
+		} catch (error) {
+			throw error;
+		}
 	}
-};
-getMealItems().then((mealItems) => console.log(mealItems));
+	getMealItems().then((mealItems) => response.send(mealItems));
+});
+
+exports.api = functions.https.onRequest(app);
