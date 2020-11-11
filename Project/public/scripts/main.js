@@ -305,12 +305,11 @@ rhit.initializePage = function() {
 	}
 
 	else if(document.querySelector("#detailPage")){
-
-			const queryString = window.location.search
-			const urlParams = new URLSearchParams(queryString);
-			const uid = urlParams.get("uid");
-			new rhit.DetailPageController();
-		}
+		const queryString = window.location.search
+		const urlParams = new URLSearchParams(queryString);
+		const uid = urlParams.get("uid");
+		new rhit.DetailPageController();
+	}
 
 	else if(document.querySelector("#loginPage")) {
 		console.log("You are on the login page.");
