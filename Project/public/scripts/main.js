@@ -5,7 +5,7 @@ rhit.FB_KEY_CALORIES = "Calories";
 rhit.fbAuthManager = null;
 rhit.fbItemManager = null;
 
-rhit.foodItem = null;
+rhit.foodName = null;
 rhit.calories = 0;
 
 rhit.selectedMenu = "";
@@ -30,20 +30,21 @@ rhit.ListPageController = class {
 		const urlParams = new URLSearchParams(window.location.search);
 		rhit.selectedMenu = urlParams.get('menu');
 		console.log(rhit.selectedMenu);
-		rhit.fbItemManager = new rhit.FbItemManager();
+		this._uid = urlParams.get('uid');
+		rhit.fbItemManager = new rhit.FbItemManager(this._uid);
 		document.querySelector("#menuDiningHall").onclick = (event) => {
 			rhit.selectedMenu = "Dining Hall";
-			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}&uid=${rhit.fbAuthManager.uid}`;
 			this.updateView();
 		}
 		document.querySelector("#menuChaunceys").onclick = (event) => {
 			rhit.selectedMenu = "Chauncey's";
-			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}&uid=${rhit.fbAuthManager.uid}`;
 			this.updateView();
 		}
 		document.querySelector("#menuRoseGardens").onclick = (event) => {
 			rhit.selectedMenu = "Rose Gardens";
-			window.location.href = `/list.html?menu=${rhit.selectedMenu}`;
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}&uid=${rhit.fbAuthManager.uid}`;
 			this.updateView();
 		}
 
@@ -51,12 +52,12 @@ rhit.ListPageController = class {
 			rhit.fbAuthManager.signOut();
 		}
 
-		// document.querySelector("#foodItem").onclick = (event) => {
-		// 	rhit.foodItem = 
-		// }
-
 		this.updateView();
 		rhit.fbItemManager.beginListening(this.updateList.bind(this));
+
+		document.querySelector("#menuMyReviews").onclick = (event) => {
+			window.location.href = `/myReviews.html?user=${this._uid}`
+		}
 	}
 
 	updateView() {
@@ -66,7 +67,7 @@ rhit.ListPageController = class {
   
   _createItem(item) {
 		return htmlToElement(`<div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
-      <a href = "/item.html?name=${item.name}&menu=${rhit.selectedMenu}" id = "meal">${item.name}</a></div>`);
+      <a href = "/item.html?name=${item.name}&menu=${rhit.selectedMenu}&uid=${this._uid}" id = "meal">${item.name}</a></div>`);
 	}
 
 	updateList() {
@@ -94,8 +95,8 @@ rhit.ListPageController = class {
 }
 
 rhit.FbItemManager = class {
-	constructor() {
-		// this._uid = uid;
+	constructor(uid) {
+		this._uid = uid;
 		this._documentSnapshots = [];
 		this._ref = firebase.firestore().collection(rhit.selectedMenu);
 		console.log("Ref: " + this._ref + " " + rhit.selectedMenu);
@@ -220,8 +221,8 @@ rhit.FbAuthManager = class {
 }
 
 rhit.DetailPageController = class {
-  constructor() {
-	
+  constructor(uid) {
+	this._uid = uid;
     const urlParams = new URLSearchParams(window.location.search);
 	rhit.foodName = urlParams.get('name');
 	rhit.selectedMenu = urlParams.get('menu');
@@ -231,7 +232,7 @@ rhit.DetailPageController = class {
 	this.foodItem.get().then(function(doc) {
 		if (doc.exists) {
 			rhit.calories = doc.data().Calories;
-			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit.calories + ")";
+			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ") (" + rhit.calories + " calories)";
 		} else {
 			// doc.data() will be undefined in this case
 			console.log("No such document!");
@@ -242,9 +243,14 @@ rhit.DetailPageController = class {
 	// console.log(this.foodItem.data());
     document.querySelector("#foodNameHereTitle").text = rhit.foodName;
     document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
-	
+	document.querySelector("#foodNameHere").href = `/list.html?menu=${rhit.selectedMenu}&uid=${this._uid}`;
+
 	document.querySelector("#menuSignOut").onclick = (event) => {
 		rhit.fbAuthManager.signOut();
+	}
+
+	document.querySelector("#menuMyReviews").onclick = (event) => {
+		window.location.href = `/myReviews.html?user=${this._uid}`
 	}
   }
 
@@ -255,7 +261,7 @@ rhit.startFirebaseUI = function() {
 	var uiConfig = {
         signInSuccessUrl: '/',
         signInOptions: [
-          firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
+        //   firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
         ],
       };
 
@@ -270,7 +276,7 @@ rhit.startFirebaseUI = function() {
 /** function and class syntax examples */
 rhit.main = function () {
 	
-  rhit.fbAuthManager = new rhit.FbAuthManager();
+  	rhit.fbAuthManager = new rhit.FbAuthManager();
 	rhit.fbAuthManager.beginListening(() => {
 
 		rhit.checkForRedirects();
@@ -283,7 +289,7 @@ rhit.main = function () {
 
 rhit.checkForRedirects = function() {
 	if(document.querySelector("#loginPage") && rhit.fbAuthManager.isSignedIn){
-		window.location.href = "/list.html?menu=Dining%20Hall";
+		window.location.href = `/list.html?menu=Dining%20Hall&uid=${rhit.fbAuthManager.uid}`;
 	}
 	if(!document.querySelector("#loginPage") && !rhit.fbAuthManager.isSignedIn){
 		window.location.href = "/";
@@ -305,11 +311,12 @@ rhit.initializePage = function() {
 	}
 
 	else if(document.querySelector("#detailPage")){
-		const queryString = window.location.search
-		const urlParams = new URLSearchParams(queryString);
-		const uid = urlParams.get("uid");
-		new rhit.DetailPageController();
-	}
+
+			const queryString = window.location.search
+			const urlParams = new URLSearchParams(queryString);
+			const uid = urlParams.get("uid");
+			new rhit.DetailPageController(uid);
+		}
 
 	else if(document.querySelector("#loginPage")) {
 		console.log("You are on the login page.");
