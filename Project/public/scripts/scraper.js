@@ -1,8 +1,11 @@
 const express = require('express');
+const cors = require('cors');
 const axios = require('axios');
 const cheerio = require('cheerio');
 
 const app = express();
+
+app.use(cors({origin: true}));
 
 app.get("/mealitems",(request, response) => {
 	const getMealItems = async () => {
@@ -23,7 +26,7 @@ app.get("/mealitems",(request, response) => {
 			throw error;
 		}
 	}
-	getMealItems().then((mealItems) => response.send(mealItems));
+	getMealItems().then((mealItems) => response.send({"list": mealItems}));
 });
 
 exports.api = functions.https.onRequest(app);
