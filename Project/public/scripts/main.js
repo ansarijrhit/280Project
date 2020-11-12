@@ -5,6 +5,26 @@ rhit.FB_KEY_CALORIES = "Calories";
 rhit.fbAuthManager = null;
 rhit.fbItemManager = null;
 
+rhit.listPageController = null;
+
+rhit.updateDiningHall = false;
+
+rhit.dailyMeals = [];
+
+rhit.excludedItems = ["Agave Nectar", "Almonds", "American Cheese", "Apple", "Apple Juice",
+"Arugula", "Asparagus", "Balsamic Vinaigrette", "Banana", "Banana Pepper Rings", "Basil Parmesan Pesto", "Beets",
+"Bell Peppers", "Black Beans", "Black Coffee", "Black Olives", "BlackBerries", "Blue Cheese", "Blue Cheese Dressing",
+"Blueberries", "Blueberry Cream Cheese", "Brats", "Broccoli", "Brown Sugar", "Bulgur Wheat", "Buttermilk Ranch Dressing",
+"Canola Olive Oil Blend", "Cantaloupe", "Carrot Ginger Sesame Soy Vinaigrette", "Cauliflower", "Cauliflower with Spinach and Tomato",
+"Celery", "Cheddar Cheese", "Cheese Danish", "Chia Seeds", "Chipotle Mayonnaise", "Cinnamon", "Citrus Honey Dressing",
+"Corn", "Cranberry Juice", "Croutons", "Crushed Red Pepper", "Cucumber Yogurt Dressing", "Cucumbers", "Diet Dr. Pepper Medium",
+"Cream Cheese", "Diet Mountan Dew Medium", "Diet Pepsi Medium", "Dijon Mustard", "Dr. Pepper", "Dried Cranberries", "Dried Oregano",
+"Earl Grey Tea", "Edamame Soybeans", "Egg Whites", "Extra Virgin Olive Oil", "Feta Cheese", "Flax Seeds", "",
+"", "", "", "", "", "", "",
+"", "", "", "", "", "", "",
+"", "", "", "", "", "", "",
+"", "", "", "", "", "", "",];
+
 rhit.foodName = null;
 rhit.calories = 0;
 
@@ -23,10 +43,8 @@ function htmlToElement(html){
 
 rhit.ListPageController = class {
 	constructor() {
-
-		// this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_CHAUNCEYS);
-
-		// console.log(this._ref);
+		// rhit.dailyMeals = await rhit.getDailyMeals();
+		rhit.getDailyMeals();
 		const urlParams = new URLSearchParams(window.location.search);
 		rhit.selectedMenu = urlParams.get('menu');
 		console.log(rhit.selectedMenu);
@@ -71,10 +89,21 @@ rhit.ListPageController = class {
 	}
 
 	updateList() {
-		console.log("update List!");
-
 		const newList = htmlToElement('<div class = "row" id="meals"></div>');
 
+
+		if(rhit.selectedMenu == "Dining Hall" && rhit.updateDiningHall){
+			for(let j = 0; j < rhit.dailyMeals.length; j++){
+				console.log(j + " " + rhit.dailyMeals[j]);
+				const meal = rhit.dailyMeals[j];
+				if(!rhit.excludedItems.includes(meal)){
+					rhit.fbItemManager.add(meal);
+				}
+			}
+			rhit.updateDiningHall = false;
+		}
+		
+		console.log(rhit.fbItemManager.length);
 		for(let i = 0; i < rhit.fbItemManager.length; i++){
 			const item = rhit.fbItemManager.getItemAtIndex(i);
 			const newCard = this._createItem(item);
@@ -85,6 +114,7 @@ rhit.ListPageController = class {
 
 			newList.appendChild(newCard);	
 		}
+
 		//Remove old container
 		const oldList = document.querySelector("#meals");
 		oldList.removeAttribute("id");
@@ -92,6 +122,8 @@ rhit.ListPageController = class {
 		//Put in the new container
 		oldList.parentElement.appendChild(newList);
 	}
+
+
 }
 
 rhit.FbItemManager = class {
@@ -102,22 +134,18 @@ rhit.FbItemManager = class {
 		console.log("Ref: " + this._ref + " " + rhit.selectedMenu);
 		this._unsubscribe = null;
 	}
-	// add(itemName, aggregate, calories) {
-	// 	this._ref.add({
-	// 		[rhit.FB_KEY_PHOTO]: itemName, //Not done
-	// 		[rhit.FB_KEY_CAPTION]: aggregate, //Fix
-	// 		[rhit.FB_KEY_AUTHOR]: rhit.fbAuthManager.uid,
-	// 		[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now()
-	// 	})
-	// 	.then(function (docRef) {
-	// 		console.log("boi");
-	// 	})
-	// 	.catch(function (error) {
-	// 		console.log("errrrrror");
-	// 	});
-	// }
+	add(item) {
+		console.log("Add item: " + item);
+		this._ref.doc(item).set({
+			Name: item
+		})
+		.catch(function (error) {
+			console.log(error);
+		});
+		console.log("0: "+ this._ref[0]);
+	}
 	beginListening(changeListener){
-    	let query = this._ref.orderBy(rhit.FB_KEY_CALORIES, 'desc');
+    	let query = this._ref.orderBy("Name", 'asc');
 
 		// if(this._uid){
 		// 	query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
@@ -126,7 +154,6 @@ rhit.FbItemManager = class {
 		this._unsubscribe = query
 		.onSnapshot((querySnapshot) => {
 			this._documentSnapshots = querySnapshot.docs;
-			console.log(this._documentSnapshots);
 			changeListener();
 		});
 	}
@@ -145,10 +172,11 @@ rhit.FbItemManager = class {
 			docSnapshot.get(rhit.FB_KEY_CALORIES)
 		);
 		return item;
-  }
-  getItemByName(name){
+	}
+	getItemByName(name){
+		console.log("Get item by the name of: " + name);
 		return this._ref.doc(name);
-  }
+	}
 }
 
 rhit.Item = class {
@@ -177,7 +205,6 @@ rhit.FbAuthManager = class {
 		console.log("FBAuthManager Begin Listening");
 
 		firebase.auth().onAuthStateChanged((user) => {
-			console.log(this._user);
 			this._user = user;
 			changeListener();
 		});
@@ -223,6 +250,14 @@ rhit.FbAuthManager = class {
 rhit.DetailPageController = class {
   constructor(uid) {
 	this._uid = uid;
+	console.log(this._uid);
+	// rhit.fbAuthManager = new rhit.FbAuthManager();
+	// rhit.fbAuthManager.beginListening(() => {
+
+	// 	rhit.checkForRedirects();
+
+	// });
+	// console.log(rhit.fbAuthManager);
     const urlParams = new URLSearchParams(window.location.search);
 	rhit.foodName = urlParams.get('name');
 	rhit.selectedMenu = urlParams.get('menu');
@@ -232,7 +267,7 @@ rhit.DetailPageController = class {
 	this.foodItem.get().then(function(doc) {
 		if (doc.exists) {
 			rhit.calories = doc.data().Calories;
-			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ") (" + rhit.calories + " calories)";
+			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ")";// (" + rhit.calories + " calories)";
 		} else {
 			// doc.data() will be undefined in this case
 			console.log("No such document!");
@@ -283,7 +318,6 @@ rhit.main = function () {
 
 		rhit.initializePage();
 
-
 	});
 };
 
@@ -307,7 +341,7 @@ rhit.initializePage = function() {
 	if(document.querySelector("#listPage")){
 		const uid = urlParams.get("uid");
 		rhit.selectedMenu = "Dining Hall";
-		new rhit.ListPageController();
+		rhit.listPageController = new rhit.ListPageController();
 	}
 
 	else if(document.querySelector("#detailPage")){
@@ -323,5 +357,22 @@ rhit.initializePage = function() {
 		new rhit.LoginPageController();
 	}
 }
+
+rhit.getDailyMeals = async () => {
+	fetch(`http://localhost:5001/ansarij-brunojchris-mealrating/us-central1/api/mealitems`,
+	{mode: 'cors'})
+	.then(response => {
+		return response.json();})
+	.then(data => {
+		rhit.dailyMeals = data.list;
+		rhit.updateDiningHall = true;
+		if(rhit.selectedMenu == "Dining Hall"){
+			rhit.listPageController.updateList();
+		}
+		// return data.list;
+	})
+	.catch((err) => console.log("Error: " + err));
+}
+
 
 rhit.main();

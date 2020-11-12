@@ -262,7 +262,7 @@ rhit2.MyReviewsPageController = class {
 
 	_createReview(review) {
 		return htmlToElement(`<div id = "review">
-        <h2 id = "title"><a href = "/item.html?name=${review.item}&menu=${review.restaurant}&uid=${this.uid}">Review by ${review.user} (${review.score})</a></h2>
+        <h2 id = "title"><a href = "/item.html?name=${review.item}&menu=${review.restaurant}&uid=${this.uid}">Review of ${review.item} by ${review.user} (${review.score})</a></h2>
         <p id = "meat">${review.review}</p>
 		</div>`);
 	}
