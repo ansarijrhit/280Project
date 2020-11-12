@@ -50,6 +50,9 @@ rhit.ListPageController = class {
 		console.log(rhit.selectedMenu);
 		this._uid = urlParams.get('uid');
 		rhit.fbItemManager = new rhit.FbItemManager(this._uid);
+
+		document.querySelector("#title").href = `/list.html?menu=${rhit.selectedMenu}&uid=${rhit.fbAuthManager.uid}`;
+
 		document.querySelector("#menuDiningHall").onclick = (event) => {
 			rhit.selectedMenu = "Dining Hall";
 			window.location.href = `/list.html?menu=${rhit.selectedMenu}&uid=${rhit.fbAuthManager.uid}`;

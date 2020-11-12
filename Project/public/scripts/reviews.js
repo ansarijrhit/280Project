@@ -231,6 +231,22 @@ rhit2.MyReviewsPageController = class {
 		this.uid = urlParams.get('user');
 
 		document.querySelector("#title").href = `/list.html?menu=Dining%20Hall&uid=${this.uid}`;
+
+		document.querySelector("#menuDiningHall").onclick = (event) => {
+			rhit.selectedMenu = "Dining Hall";
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}&uid=${rhit.fbAuthManager.uid}`;
+			
+		}
+		document.querySelector("#menuChaunceys").onclick = (event) => {
+			rhit.selectedMenu = "Chauncey's";
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}&uid=${rhit.fbAuthManager.uid}`;
+			
+		}
+		document.querySelector("#menuRoseGardens").onclick = (event) => {
+			rhit.selectedMenu = "Rose Gardens";
+			window.location.href = `/list.html?menu=${rhit.selectedMenu}&uid=${rhit.fbAuthManager.uid}`;
+			
+		}
     }
 
     updateList() {
