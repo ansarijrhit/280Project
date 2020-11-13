@@ -11,20 +11,12 @@ rhit.updateDiningHall = false;
 
 rhit.dailyMeals = [];
 
-// rhit.excludedItems = ["Frank's red hot","Tabasco","yellow mustard","","",
-// "","","","","","","",
-// "","","","","","","",
-// "","","","","","","",];
-
 rhit.foodName = null;
 
 rhit.selectedMenu = "";
 
 rhit.uid = null;
 
-/* <div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
-	   <a href = "/item.html" id = "meal">Dry Chicken</a>
-   </div> */
 
 function htmlToElement(html){
   var template = document.createElement('template');
@@ -128,6 +120,9 @@ rhit.ListPageController = class {
 		
 		for(let i = 0; i < rhit.fbItemManager.length; i++){
 			const item = rhit.fbItemManager.getItemAtIndex(i);
+			if(rhit.selectedMenu == "Dining Hall" && !rhit.dailyMeals.includes(item.name)){
+				continue;
+			}
 			const newCard = this._createItem(item);
 
 			newCard.onclick = (event) => {
