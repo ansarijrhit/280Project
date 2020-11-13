@@ -15,17 +15,20 @@ const cheerio = require('cheerio');
 exports.api = functions.https.onRequest((request, response) => {
 	const getMealItems = async () => {
 		try {
+			this.url = await getLegacyURL();//.then(() => {}).catch((err) => {console.log(err);});
 			const { data } = await axios.get(
-				'https://rose-hulman.cafebonappetit.com/cafe/cafe/'
+				"" + this.url
+				// 'https://rose-hulman.cafebonappetit.com/cafe/cafe/'
 			);
 			const $ = cheerio.load(data);
 			const mealItems = [];
 
-			$('button.site-panel__daypart-item-title').each((_idx, el) => {
-				const mealItem = $(el).text().replace(/[\n\t]+/gm, "");
+			$('div > p').each((_idx, el) => {
+				const mealItem = $($(el).contents().get(0)).text().replace(/[\n\t]+/gm, "");
 				mealItems.push(mealItem);
 			});
-
+			mealItems.splice(mealItems.length-3);
+			console.log(mealItems);
 			return mealItems;
 		} catch (error) {
 			throw error;
@@ -35,3 +38,17 @@ exports.api = functions.https.onRequest((request, response) => {
     response.header("Access-Control-Allow-Origin", "*");
 	getMealItems().then((mealItems) => response.send({"list": mealItems}));
 });
+
+const getLegacyURL = async () => {
+	try {
+		const { data } = await axios.get(
+			'https://rose-hulman.cafebonappetit.com/cafe/cafe/'
+		);
+		const $ = cheerio.load(data);
+		const url = $(`a:contains('Today's Menu')`).attr('href');
+		console.log(url);
+		return url;
+	} catch (error) {
+		throw error;
+	}
+}

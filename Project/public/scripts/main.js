@@ -33,6 +33,31 @@ function htmlToElement(html){
   return template.content.firstChild;
 }
 
+function titleCase(str) {
+	// var splitStr = str.toLowerCase().split(" ");
+
+	// for (var i = 0; i < splitStr.length; i++) {
+	// 	if (splitStr.length[i] < splitStr.length) {
+	// 	splitStr[i].charAt(0).toUpperCase();
+	// 	}
+
+	// 	str = splitStr.join(" ");
+	// }
+
+	// return str;
+	let result = str[ 0 ].toUpperCase();
+
+  for ( let i = 1; i < str.length; i++ ) {
+    if ( str[ i - 1 ] === ' ' ) {
+      result += str[ i ].toUpperCase();
+    } else {
+      result += str[ i ];
+    }
+  }
+
+  return result;
+}
+
 rhit.ListPageController = class {
 	constructor() {
 		// rhit.dailyMeals = await rhit.getDailyMeals();
@@ -79,8 +104,12 @@ rhit.ListPageController = class {
   }
   
   _createItem(item) {
+	  this.name = titleCase(item.name);
+	//   if(this.name.length > 30){
+	// 	  this.name = this.name.substring(0, 30) + "...";
+	//   }
 		return htmlToElement(`<div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
-      <a href = "/item.html?name=${item.name}&menu=${rhit.selectedMenu}" id = "meal">${item.name}</a></div>`);
+      <a href = "/item.html?name=${item.name}&menu=${rhit.selectedMenu}" id = "meal">${this.name}</a></div>`);
 	}
 
 	updateList() {
@@ -89,7 +118,6 @@ rhit.ListPageController = class {
 
 		if(rhit.selectedMenu == "Dining Hall" && rhit.updateDiningHall){
 			for(let j = 0; j < rhit.dailyMeals.length; j++){
-				console.log(j + " " + rhit.dailyMeals[j]);
 				const meal = rhit.dailyMeals[j];
 				// if(!rhit.excludedItems.includes(meal)){
 					rhit.fbItemManager.add(meal);
@@ -98,7 +126,6 @@ rhit.ListPageController = class {
 			rhit.updateDiningHall = false;
 		}
 		
-		console.log(rhit.fbItemManager.length);
 		for(let i = 0; i < rhit.fbItemManager.length; i++){
 			const item = rhit.fbItemManager.getItemAtIndex(i);
 			const newCard = this._createItem(item);
@@ -130,14 +157,12 @@ rhit.FbItemManager = class {
 		this._unsubscribe = null;
 	}
 	add(item) {
-		console.log("Add item: " + item);
 		this._ref.doc(item).set({
 			Name: item
 		})
 		.catch(function (error) {
 			console.log(error);
 		});
-		console.log("0: "+ this._ref[0]);
 	}
 	beginListening(changeListener){
     	let query = this._ref.orderBy("Name", 'asc');
@@ -258,8 +283,13 @@ rhit.DetailPageController = class {
 	}).catch(function(error) {
 		console.log("Error getting document:", error);
 	});
-    document.querySelector("#foodNameHereTitle").text = rhit.foodName;
-    document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
+	document.querySelector("#foodNameHereTitle").text = rhit.foodName;
+	if(rhit.foodName.length > 50){
+		document.querySelector("#foodNameHere").innerHTML = rhit.foodName.substring(0, 50) + "...";
+	}
+	else{
+		document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
+	}
 	document.querySelector("#foodNameHere").href = `/list.html?menu=${rhit.selectedMenu}&uid=${this._uid}`;
 
 	document.querySelector("#menuSignOut").onclick = (event) => {
@@ -314,14 +344,12 @@ rhit.checkForRedirects = function() {
 
 rhit.initializePage = function() {
 	if(document.querySelector("#listPage")){
-		console.log("List: " + rhit.fbAuthManager.uid);
 		rhit.uid = rhit.fbAuthManager.uid;
 		rhit.selectedMenu = "Dining Hall";
 		rhit.listPageController = new rhit.ListPageController();
 	}
 
 	else if(document.querySelector("#detailPage")){
-		console.log("Detail: " + rhit.fbAuthManager.uid);
 		rhit.uid = rhit.fbAuthManager.uid;
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString);
@@ -342,9 +370,8 @@ rhit.getDailyMeals = async () => {
 	.then(data => {
 		rhit.dailyMeals = data.list;
 		rhit.updateDiningHall = true;
-		if(rhit.selectedMenu == "Dining Hall"){
-			rhit.listPageController.updateList();
-		}
+		rhit.listPageController.updateList();
+		rhit.listPageController.updateView();
 	})
 	.catch((err) => console.log("Error: " + err));
 }
