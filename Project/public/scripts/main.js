@@ -26,17 +26,6 @@ function htmlToElement(html){
 }
 
 function titleCase(str) {
-	// var splitStr = str.toLowerCase().split(" ");
-
-	// for (var i = 0; i < splitStr.length; i++) {
-	// 	if (splitStr.length[i] < splitStr.length) {
-	// 	splitStr[i].charAt(0).toUpperCase();
-	// 	}
-
-	// 	str = splitStr.join(" ");
-	// }
-
-	// return str;
 	let result = str[ 0 ].toUpperCase();
 
   for ( let i = 1; i < str.length; i++ ) {
@@ -270,7 +259,7 @@ rhit.DetailPageController = class {
 	this.foodItem = rhit.fbItemManager.getItemByName(rhit.foodName);
 	this.foodItem.get().then(function(doc) {
 		if (doc.exists) {
-			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ")";
+			document.querySelector("#foodNameHere2").innerHTML = titleCase(rhit.foodName) + " (" + rhit2.aggregate + ")";
 		} else {
 			// doc.data() will be undefined in this case
 			console.log("No such document!");
@@ -278,12 +267,12 @@ rhit.DetailPageController = class {
 	}).catch(function(error) {
 		console.log("Error getting document:", error);
 	});
-	document.querySelector("#foodNameHereTitle").text = rhit.foodName;
+	document.querySelector("#foodNameHereTitle").text = titleCase(rhit.foodName);
 	if(rhit.foodName.length > 50){
-		document.querySelector("#foodNameHere").innerHTML = rhit.foodName.substring(0, 50) + "...";
+		document.querySelector("#foodNameHere").innerHTML = titleCase(rhit.foodName.substring(0, 50)) + "...";
 	}
 	else{
-		document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
+		document.querySelector("#foodNameHere").innerHTML = titleCase(rhit.foodName);
 	}
 	document.querySelector("#foodNameHere").href = `/list.html?menu=${rhit.selectedMenu}&uid=${this._uid}`;
 

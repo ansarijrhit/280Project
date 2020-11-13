@@ -15,6 +15,20 @@ function htmlToElement(html){
     return template.content.firstChild;
   }
 
+  function titleCase(str) {
+	let result = str[ 0 ].toUpperCase();
+
+  for ( let i = 1; i < str.length; i++ ) {
+    if ( str[ i - 1 ] === ' ' ) {
+      result += str[ i ].toUpperCase();
+    } else {
+      result += str[ i ];
+    }
+  }
+
+  return result;
+}
+
 rhit2.FbReviewManager = class {
 	constructor() {
 		this._documentSnapshots = [];
@@ -268,7 +282,7 @@ rhit2.MyReviewsPageController = class {
 
 	_createReview(review) {
 		return htmlToElement(`<div id = "review">
-        <h2 id = "title"><a href = "/item.html?name=${review.item}&menu=${review.restaurant}">Review of ${review.item} by ${review.user} (${review.score})</a></h2>
+        <h2 id = "title"><a href = "/item.html?name=${review.item}&menu=${review.restaurant}">Review of ${titleCase(review.item)} by ${review.user} (${review.score})</a></h2>
         <p id = "meat">${review.review}</p>
 		</div>`);
 	}
