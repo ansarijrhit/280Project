@@ -89,7 +89,7 @@ rhit2.FbReviewManager = class {
 			
 			}
 
-			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ") (" + rhit.calories + " calories)";
+			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ")";
 		}).catch(function(error) {
 			console.error("Error removing document: ", error);
 		});
@@ -130,14 +130,10 @@ rhit2.DetailPageController = class {
         this.updateList();
 		rhit2.fbReviewManager.beginListening(this.updateList.bind(this));
 
-		const urlParams = new URLSearchParams(window.location.search);
-		this.uid = urlParams.get('uid');
-		// console.log(this.uid);
+		this.uid = rhit.uid;
 
 		document.querySelector("#submitReview").onclick = (event) => {
-			// console.log(rhit.foodName + " " + rhit.selectedMenu);
 			var score = parseInt($('#radios input:radio:checked').val());
-			// console.log(this.uid);
 			rhit2.fbReviewManager.add(rhit.foodName, rhit.selectedMenu, score, document.querySelector("#reviewExplain").value, this.uid);
 			console.log("Review Submit");
 			document.querySelector("#reviewExplain").value = "";
@@ -148,15 +144,12 @@ rhit2.DetailPageController = class {
 		}
 
 		document.querySelector("#submitEditReview").onclick = (event) => {
-			console.log("Hewwo?");
 			var score = parseInt($('#editRadios input:radio:checked').val());
 			rhit2.fbReviewManager.update(rhit2.selectedReview.id, score, document.querySelector("#editReviewExplain").value);
 		}
     }
 
     updateList() {
-		console.log("update List!");
-
 		const newList = htmlToElement('<div id= "reviews"></div>');
 		rhit2.scores = [];
 		rhit2.aggregate = 0;
@@ -191,7 +184,7 @@ rhit2.DetailPageController = class {
 			rhit2.aggregate += rhit2.scores[i];
 		}
 		rhit2.aggregate /= (rhit2.scores.length);
-		document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ") (" + rhit.calories + " calories)";
+		document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ")";
 
 		if(review.user == this.uid){
 			rhit2.selectedReview = review;
@@ -228,8 +221,8 @@ rhit2.MyReviewsPageController = class {
 		rhit2.fbReviewManager.beginListening(this.updateList.bind(this));
 
 		const urlParams = new URLSearchParams(window.location.search);
-		this.uid = urlParams.get('user');
-
+		this.uid = urlParams.get('uid');
+		console.log("MyReviewsPageController: " + this.uid);
 		document.querySelector("#title").href = `/list.html?menu=Dining%20Hall&uid=${this.uid}`;
 
 		document.querySelector("#menuDiningHall").onclick = (event) => {
@@ -278,16 +271,13 @@ rhit2.MyReviewsPageController = class {
 
 	_createReview(review) {
 		return htmlToElement(`<div id = "review">
-        <h2 id = "title"><a href = "/item.html?name=${review.item}&menu=${review.restaurant}&uid=${this.uid}">Review of ${review.item} by ${review.user} (${review.score})</a></h2>
+        <h2 id = "title"><a href = "/item.html?name=${review.item}&menu=${review.restaurant}">Review of ${review.item} by ${review.user} (${review.score})</a></h2>
         <p id = "meat">${review.review}</p>
 		</div>`);
 	}
 }
 
 rhit2.main = function() {
-	if(document.querySelector("#detailPage")){
-		new rhit2.DetailPageController();
-	}
 	if(document.querySelector("#myReviewsPage")){
 		new rhit2.MyReviewsPageController();
 	}

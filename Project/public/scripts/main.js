@@ -26,9 +26,10 @@ rhit.excludedItems = ["Agave Nectar", "Almonds", "American Cheese", "Apple", "Ap
 "", "", "", "", "", "", "",];
 
 rhit.foodName = null;
-rhit.calories = 0;
 
 rhit.selectedMenu = "";
+
+rhit.uid = null;
 
 /* <div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
 	   <a href = "/item.html" id = "meal">Dry Chicken</a>
@@ -47,7 +48,6 @@ rhit.ListPageController = class {
 		rhit.getDailyMeals();
 		const urlParams = new URLSearchParams(window.location.search);
 		rhit.selectedMenu = urlParams.get('menu');
-		console.log(rhit.selectedMenu);
 		this._uid = urlParams.get('uid');
 		rhit.fbItemManager = new rhit.FbItemManager(this._uid);
 
@@ -78,6 +78,7 @@ rhit.ListPageController = class {
 
 		document.querySelector("#menuMyReviews").onclick = (event) => {
 			window.location.href = `/myReviews.html?user=${this._uid}`
+			new rhit2.MyReviewsPageController(this._uid);
 		}
 	}
 
@@ -88,7 +89,7 @@ rhit.ListPageController = class {
   
   _createItem(item) {
 		return htmlToElement(`<div class = "col-6 col-md-4 col-lg-3" id="item" align="center">
-      <a href = "/item.html?name=${item.name}&menu=${rhit.selectedMenu}&uid=${this._uid}" id = "meal">${item.name}</a></div>`);
+      <a href = "/item.html?name=${item.name}&menu=${rhit.selectedMenu}" id = "meal">${item.name}</a></div>`);
 	}
 
 	updateList() {
@@ -134,7 +135,7 @@ rhit.FbItemManager = class {
 		this._uid = uid;
 		this._documentSnapshots = [];
 		this._ref = firebase.firestore().collection(rhit.selectedMenu);
-		console.log("Ref: " + this._ref + " " + rhit.selectedMenu);
+		// console.log("Ref: " + this._ref + " " + rhit.selectedMenu);
 		this._unsubscribe = null;
 	}
 	add(item) {
@@ -177,7 +178,6 @@ rhit.FbItemManager = class {
 		return item;
 	}
 	getItemByName(name){
-		console.log("Get item by the name of: " + name);
 		return this._ref.doc(name);
 	}
 }
@@ -253,24 +253,19 @@ rhit.FbAuthManager = class {
 rhit.DetailPageController = class {
   constructor(uid) {
 	this._uid = uid;
-	console.log(this._uid);
-	// rhit.fbAuthManager = new rhit.FbAuthManager();
-	// rhit.fbAuthManager.beginListening(() => {
-
-	// 	rhit.checkForRedirects();
-
-	// });
-	// console.log(rhit.fbAuthManager);
+	rhit.uid = uid;
     const urlParams = new URLSearchParams(window.location.search);
 	rhit.foodName = urlParams.get('name');
 	rhit.selectedMenu = urlParams.get('menu');
 	rhit.fbItemManager = new rhit.FbItemManager();
+
+	new rhit2.DetailPageController();
+
 	this.foodItem = rhit.fbItemManager.getItemByName(rhit.foodName);
 	// console.log(rhit.fbItemManager._ref.doc(rhit.foodName).data().Calories);
 	this.foodItem.get().then(function(doc) {
 		if (doc.exists) {
-			rhit.calories = doc.data().Calories;
-			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ")";// (" + rhit.calories + " calories)";
+			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ")";
 		} else {
 			// doc.data() will be undefined in this case
 			console.log("No such document!");
@@ -288,7 +283,7 @@ rhit.DetailPageController = class {
 	}
 
 	document.querySelector("#menuMyReviews").onclick = (event) => {
-		window.location.href = `/myReviews.html?user=${this._uid}`
+		window.location.href = `/myReviews.html?uid=${this._uid}`
 	}
   }
 
@@ -334,26 +329,22 @@ rhit.checkForRedirects = function() {
 };
 
 rhit.initializePage = function() {
-  // if(document.querySelector("#mainPage")){
-  //   new rhit.mainPageManager();
-  // }
-  // else if(document.querySelector("#loginPage")){
-  //   new rhit.LoginPageController
-  // }
-  const urlParams = new URLSearchParams(window.location.search);
 	if(document.querySelector("#listPage")){
-		const uid = urlParams.get("uid");
+		console.log("List: " + rhit.fbAuthManager.uid);
+		rhit.uid = rhit.fbAuthManager.uid;
 		rhit.selectedMenu = "Dining Hall";
 		rhit.listPageController = new rhit.ListPageController();
 	}
 
 	else if(document.querySelector("#detailPage")){
-
-			const queryString = window.location.search
-			const urlParams = new URLSearchParams(queryString);
-			const uid = urlParams.get("uid");
-			new rhit.DetailPageController(uid);
-		}
+		console.log("Detail: " + rhit.fbAuthManager.uid);
+		rhit.uid = rhit.fbAuthManager.uid;
+		// rhit2.uid = 
+		const queryString = window.location.search
+		const urlParams = new URLSearchParams(queryString);
+		const uid = urlParams.get("uid");
+		new rhit.DetailPageController(rhit.fbAuthManager.uid);
+	}
 
 	else if(document.querySelector("#loginPage")) {
 		console.log("You are on the login page.");
