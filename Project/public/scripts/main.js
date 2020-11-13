@@ -348,7 +348,9 @@ rhit.initializePage = function() {
 }
 
 rhit.getDailyMeals = async () => {
-	fetch(`http://localhost:5001/ansarij-brunojchris-mealrating/us-central1/api/mealitems`)
+	// fetch(`http://localhost:5001/ansarij-brunojchris-mealrating/us-central1/api/mealitems`)
+	fetch(`https://us-central1-ansarij-brunojchris-mealrating.cloudfunctions.net/api/mealitems`)
+	// {mode: cors})
 	.then(response => {
 		return response.json();})
 	.then(data => {
