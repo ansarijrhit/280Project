@@ -98,3 +98,12 @@ body {
   opacity: .8;
   transform: translateY(2px);
 }
+
+.navbar-dark .navbar-toggler {
+  color:white;
+  border-color:#800000;
+}
+
+.dropdown {
+  padding-top: .5
+}
