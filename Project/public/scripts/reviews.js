@@ -17,14 +17,11 @@ function htmlToElement(html){
 
 rhit2.FbReviewManager = class {
 	constructor() {
-        // this._uid = "hi";
 		this._documentSnapshots = [];
 		this._ref = firebase.firestore().collection("Reviews");
-		// console.log("Ref2: " + this._ref);
         this._unsubscribe = null;
 	}
 	add(item, restaurant, score, review, user) {
-		// console.log(item + " " + restaurant + " " + score + " " + review + " " + firebase.firestore.Timestamp.now() + " " + this._uid);
 		this._ref.add({
 			"Item": item,
 			"Restaurant": restaurant,

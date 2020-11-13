@@ -9,14 +9,8 @@
 // });
 const functions = require('firebase-functions');
 
-const express = require('express');
-const cors = require('cors');
 const axios = require('axios');
 const cheerio = require('cheerio');
-
-const app = express();
-
-app.use(cors({origin: true}));
 
 exports.api = functions.https.onRequest((request, response) => {
 	const getMealItems = async () => {

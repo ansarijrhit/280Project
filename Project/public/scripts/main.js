@@ -11,19 +11,10 @@ rhit.updateDiningHall = false;
 
 rhit.dailyMeals = [];
 
-rhit.excludedItems = ["Agave Nectar", "Almonds", "American Cheese", "Apple", "Apple Juice",
-"Arugula", "Asparagus", "Balsamic Vinaigrette", "Banana", "Banana Pepper Rings", "Basil Parmesan Pesto", "Beets",
-"Bell Peppers", "Black Beans", "Black Coffee", "Black Olives", "BlackBerries", "Blue Cheese", "Blue Cheese Dressing",
-"Blueberries", "Blueberry Cream Cheese", "Brats", "Broccoli", "Brown Sugar", "Bulgur Wheat", "Buttermilk Ranch Dressing",
-"Canola Olive Oil Blend", "Cantaloupe", "Carrot Ginger Sesame Soy Vinaigrette", "Cauliflower", "Cauliflower with Spinach and Tomato",
-"Celery", "Cheddar Cheese", "Cheese Danish", "Chia Seeds", "Chipotle Mayonnaise", "Cinnamon", "Citrus Honey Dressing",
-"Corn", "Cranberry Juice", "Croutons", "Crushed Red Pepper", "Cucumber Yogurt Dressing", "Cucumbers", "Diet Dr. Pepper Medium",
-"Cream Cheese", "Diet Mountan Dew Medium", "Diet Pepsi Medium", "Dijon Mustard", "Dr. Pepper", "Dried Cranberries", "Dried Oregano",
-"Earl Grey Tea", "Edamame Soybeans", "Egg Whites", "Extra Virgin Olive Oil", "Feta Cheese", "Flax Seeds", "",
-"", "", "", "", "", "", "",
-"", "", "", "", "", "", "",
-"", "", "", "", "", "", "",
-"", "", "", "", "", "", "",];
+// rhit.excludedItems = ["Frank's red hot","Tabasco","yellow mustard","","",
+// "","","","","","","",
+// "","","","","","","",
+// "","","","","","","",];
 
 rhit.foodName = null;
 
@@ -77,7 +68,7 @@ rhit.ListPageController = class {
 		rhit.fbItemManager.beginListening(this.updateList.bind(this));
 
 		document.querySelector("#menuMyReviews").onclick = (event) => {
-			window.location.href = `/myReviews.html?user=${this._uid}`
+			window.location.href = `/myReviews.html?uid=${this._uid}`
 			new rhit2.MyReviewsPageController(this._uid);
 		}
 	}
@@ -100,9 +91,9 @@ rhit.ListPageController = class {
 			for(let j = 0; j < rhit.dailyMeals.length; j++){
 				console.log(j + " " + rhit.dailyMeals[j]);
 				const meal = rhit.dailyMeals[j];
-				if(!rhit.excludedItems.includes(meal)){
+				// if(!rhit.excludedItems.includes(meal)){
 					rhit.fbItemManager.add(meal);
-				}
+				// }
 			}
 			rhit.updateDiningHall = false;
 		}
@@ -150,10 +141,6 @@ rhit.FbItemManager = class {
 	}
 	beginListening(changeListener){
     	let query = this._ref.orderBy("Name", 'asc');
-
-		// if(this._uid){
-		// 	query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
-		// }
 
 		this._unsubscribe = query
 		.onSnapshot((querySnapshot) => {
@@ -222,7 +209,6 @@ rhit.FbAuthManager = class {
 			}
 			console.log("Rosefire success!", rfUser);
 			
-			// TODO: Use the rfUser.token with your server.
 			firebase.auth().signInWithCustomToken(rfUser.token).catch((error) => {
 				const errorCode = error.code;
 				const errorMessage = error.message;
@@ -262,7 +248,6 @@ rhit.DetailPageController = class {
 	new rhit2.DetailPageController();
 
 	this.foodItem = rhit.fbItemManager.getItemByName(rhit.foodName);
-	// console.log(rhit.fbItemManager._ref.doc(rhit.foodName).data().Calories);
 	this.foodItem.get().then(function(doc) {
 		if (doc.exists) {
 			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ")";
@@ -273,7 +258,6 @@ rhit.DetailPageController = class {
 	}).catch(function(error) {
 		console.log("Error getting document:", error);
 	});
-	// console.log(this.foodItem.data());
     document.querySelector("#foodNameHereTitle").text = rhit.foodName;
     document.querySelector("#foodNameHere").innerHTML = rhit.foodName;
 	document.querySelector("#foodNameHere").href = `/list.html?menu=${rhit.selectedMenu}&uid=${this._uid}`;
@@ -339,7 +323,6 @@ rhit.initializePage = function() {
 	else if(document.querySelector("#detailPage")){
 		console.log("Detail: " + rhit.fbAuthManager.uid);
 		rhit.uid = rhit.fbAuthManager.uid;
-		// rhit2.uid = 
 		const queryString = window.location.search
 		const urlParams = new URLSearchParams(queryString);
 		const uid = urlParams.get("uid");
@@ -353,8 +336,7 @@ rhit.initializePage = function() {
 }
 
 rhit.getDailyMeals = async () => {
-	fetch(`http://localhost:5001/ansarij-brunojchris-mealrating/us-central1/api/mealitems`,
-	{mode: 'cors'})
+	fetch(`http://localhost:5001/ansarij-brunojchris-mealrating/us-central1/api/mealitems`)
 	.then(response => {
 		return response.json();})
 	.then(data => {
@@ -363,7 +345,6 @@ rhit.getDailyMeals = async () => {
 		if(rhit.selectedMenu == "Dining Hall"){
 			rhit.listPageController.updateList();
 		}
-		// return data.list;
 	})
 	.catch((err) => console.log("Error: " + err));
 }
