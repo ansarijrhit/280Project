@@ -1,6 +1,7 @@
 var rhit2 = rhit2 || {};
 
 rhit2.fbReviewManager = null;
+rhit2.detailPageController = null;
 
 rhit2.aggregate = 0;
 rhit2.scores = [];
@@ -82,7 +83,7 @@ rhit2.FbReviewManager = class {
 		return item;
     }
     getItemByName(name){
-            return this._ref.doc(name);
+        return this._ref.doc(name);
 	}
 	delete(reviewId){ 
 		this._ref.doc(reviewId).delete().then(function() {
@@ -101,6 +102,7 @@ rhit2.FbReviewManager = class {
 			}
 
 			document.querySelector("#foodNameHere2").innerHTML = rhit.foodName + " (" + rhit2.aggregate + ")";
+			rhit2.detailPageController.updateList();
 		}).catch(function(error) {
 			console.error("Error removing document: ", error);
 		});
@@ -108,7 +110,7 @@ rhit2.FbReviewManager = class {
 
 	update(id, rating, review) {
 		
-		this._ref = firebase.firestore().collection("Reviews").doc(id).update({
+		this._ref.doc(id).update({
 			"Score": rating,
 			"Review": review,
 			"lastTouched": firebase.firestore.Timestamp.now()
@@ -151,6 +153,7 @@ rhit2.DetailPageController = class {
 		}
 
 		document.querySelector("#submitDeleteReview").onclick = (event) => {
+			console.log("Delete");
 			rhit2.fbReviewManager.delete(rhit2.selectedReview.id);
 		}
 

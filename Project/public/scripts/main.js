@@ -254,7 +254,7 @@ rhit.DetailPageController = class {
 	rhit.selectedMenu = urlParams.get('menu');
 	rhit.fbItemManager = new rhit.FbItemManager();
 
-	new rhit2.DetailPageController();
+	rhit2.detailPageController = new rhit2.DetailPageController();
 
 	this.foodItem = rhit.fbItemManager.getItemByName(rhit.foodName);
 	this.foodItem.get().then(function(doc) {
