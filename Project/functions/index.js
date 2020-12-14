@@ -14,7 +14,9 @@ exports.api = functions.https.onRequest((request, response) => {
 		try {
 			this.url = await getLegacyURL();
 			const { data } = await axios.get(
-				"" + this.url
+				"" + this.url 
+				// "https://legacy.cafebonappetit.com/weekly-menu/308467"
+				// "https://legacy.cafebonappetit.com/print-menu/cafe/1374/menu/days/20-20-2020/pgbrks/0/"
 			);
 			const $ = cheerio.load(data);
 			const mealItems = [];
